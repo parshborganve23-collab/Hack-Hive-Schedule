@@ -705,6 +705,14 @@ async def auto_finalize(user=Depends(get_current_user)):
                 {"id": m["id"]},
                 {"$set": {"final_slot": winner, "status": "finalized", "attendees": attendees}},
             )
+            # notify all voters
+            for a in attendees:
+                await notify(
+                    a["user_id"],
+                    "meeting_finalized",
+                    f"'{m['title']}' has been scheduled for {slot_label(winner)}. Join: {m.get('meeting_link','')}",
+                    m["id"],
+                )
             finalized_count += 1
     return {"finalized": finalized_count}
 

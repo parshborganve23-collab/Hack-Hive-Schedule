@@ -112,6 +112,22 @@ export default function MeetingDetail() {
     try { await api.post(`/meetings/${id}/presence`, { detected }); load(); } catch {}
   };
 
+  // Triggered when countdown reaches zero — call open auto-finalize and refresh
+  const handleDeadlineReached = async () => {
+    try {
+      await api.post(`/meetings/auto-finalize`);
+      const before = m?.status;
+      const { data } = await api.get(`/meetings/${id}`);
+      setM(data);
+      if (before === "voting" && data.status === "finalized") {
+        toast.success(`✅ Meeting finalized — ${data.title}`, {
+          description: data.final_slot ? `Locked at ${fmt(data.final_slot)} · join ${data.meeting_link}` : "Auto-scheduled.",
+          duration: 8000,
+        });
+      }
+    } catch {}
+  };
+
   const shareLink = `${window.location.origin}/poll/${m.poll_token}`;
   const copyShare = async () => {
     await navigator.clipboard.writeText(shareLink);
@@ -131,15 +147,13 @@ export default function MeetingDetail() {
                 <h1 className="font-display text-3xl sm:text-4xl font-black mt-1" data-testid="meeting-title">{m.title}</h1>
                 {m.description && <p className="mt-3 text-[var(--hh-muted)]">{m.description}</p>}
               </div>
-              {m.status === "voting" && (
-                <div className="text-right">
-                  <div className="mono-label">deadline</div>
-                  <div className={`font-mono text-sm mt-1 ${deadlinePassed ? "text-[var(--hh-error)]" : ""}`}>
-                    {new Date(m.deadline).toLocaleString()}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {m.status === "voting" && (
+              <div className="mt-5">
+                <CountdownTimer target={m.deadline} onComplete={handleDeadlineReached}/>
+              </div>
+            )}
 
             {m.final_slot && (
               <div className="mt-5 nb-border bg-[var(--hh-amber)] p-4 flex items-center gap-3" data-testid="final-slot-banner">

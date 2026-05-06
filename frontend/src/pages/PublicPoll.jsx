@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import api, { formatApiErrorDetail } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import CountdownTimer from "@/components/CountdownTimer";
 import { Hexagon, Trophy } from "lucide-react";
 
 function fmt(slot) {
@@ -37,6 +38,14 @@ export default function PublicPoll() {
     }
   };
 
+  const onDeadlineReached = async () => {
+    try {
+      await api.post("/meetings/auto-finalize");
+      const { data } = await api.get(`/meetings/poll/${token}`);
+      setM(data);
+    } catch {}
+  };
+
   if (!ready) return <div className="min-h-screen flex items-center justify-center hex-bg"><div className="mono-label">loading...</div></div>;
   if (error) return <div className="min-h-screen p-8 hex-bg"><div className="nb-border bg-[var(--hh-error)] text-white p-4 font-mono">{error}</div></div>;
   if (!m) return <div className="min-h-screen flex items-center justify-center hex-bg"><div className="mono-label">loading poll...</div></div>;
@@ -65,7 +74,12 @@ export default function PublicPoll() {
           <div className="mono-label">[ public poll · {m.status} ]</div>
           <h1 className="font-display text-3xl sm:text-5xl font-black mt-2" data-testid="poll-title">{m.title}</h1>
           {m.description && <p className="text-[var(--hh-muted)] mt-3">{m.description}</p>}
-          <div className="mono-label mt-3">deadline: {new Date(m.deadline).toLocaleString()}</div>
+
+          {m.status === "voting" && (
+            <div className="mt-4">
+              <CountdownTimer target={m.deadline} onComplete={onDeadlineReached}/>
+            </div>
+          )}
 
           {m.final_slot && (
             <div className="mt-5 nb-border bg-[var(--hh-amber)] p-4 flex items-center gap-3">

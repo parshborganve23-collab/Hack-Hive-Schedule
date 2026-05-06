@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "@/lib/api";
 import Layout from "@/components/Layout";
 import PresenceIndicator from "@/components/PresenceIndicator";
+import CountdownTimer from "@/components/CountdownTimer";
 import { CalendarClock, Vote, Trophy, CheckCircle2, ArrowUpRight, Users } from "lucide-react";
 
 const STATUS_STYLES = {
@@ -102,6 +103,11 @@ export default function Dashboard() {
                 <span>·</span>
                 <span>{m.slots.length} slots</span>
               </div>
+              {m.status === "voting" && (
+                <div className="mt-3" onClick={(e) => e.preventDefault()}>
+                  <CountdownTimer target={m.deadline} compact label="voting ends in"/>
+                </div>
+              )}
               {m.final_slot && (
                 <div className="mt-3 nb-border bg-[var(--hh-amber)] px-2 py-1 text-xs font-mono">
                   ★ {formatRange(m.final_slot)}

@@ -41,12 +41,13 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 - Admin seed on startup
 
 **Frontend**:
-- Landing, Login, Register (with face-scan gate), Dashboard (with compact presence pill + stat tiles), CreateMeeting, MeetingDetail (vote/results + vote-vs-attendance analytics card + presence webcam + meeting-summary modal + attendance + recording), CalendarPage (custom monthly grid), Notifications, Analytics (recharts donut + votes-vs-attendance bar chart), PublicPoll
+- Landing, Login, Register (with face-scan gate), Dashboard (with compact presence pill + stat tiles + per-card live countdown), CreateMeeting, MeetingDetail (live countdown timer + auto-finalize trigger + vote/results + vote-vs-attendance analytics card + presence webcam + meeting-summary modal + attendance + recording), CalendarPage (custom monthly grid), Notifications, Analytics (recharts donut + votes-vs-attendance bar chart), PublicPoll (with countdown)
 - `FaceScanner` + `PresenceIndicator` components (face-api.js CDN, TinyFaceDetector ~190KB, frontend-only)
 - `MeetingSummaryModal` — donut + engagement score + template narrative + download .txt
+- `CountdownTimer` — live every-second tick, color tiers (calm → amber warning → red critical pulse), compact + full variants, onComplete auto-triggers `auto-finalize`
 - Auth context (cookie + localStorage Bearer fallback)
 - Layout with topbar + mobile-tabs + brand
-- Neo-brutalist primitives (`nb-border`, `nb-shadow`, `nb-press`, scan-line animations)
+- Neo-brutalist primitives (`nb-border`, `nb-shadow`, `nb-press`, scan-line animations, blink for critical seconds)
 
 ## Verified (testing agent iteration_1)
 - Backend: 18/18 pytest passing
