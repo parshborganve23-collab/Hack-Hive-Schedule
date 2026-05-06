@@ -1,0 +1,88 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) - Neo-Brutalist Hive",
+  "colors": {
+    "primary": "#FFB000",
+    "primary_hover": "#E59E00",
+    "primary_foreground": "#0A0A0A",
+    "secondary": "#0055FF",
+    "secondary_foreground": "#FFFFFF",
+    "background": "#FFFFFF",
+    "surface": "#FDFDFD",
+    "surface_alt": "#F3F4F6",
+    "text": "#0A0A0A",
+    "text_muted": "#4B5563",
+    "border": "#0A0A0A",
+    "success": "#00E676",
+    "error": "#FF3333",
+    "warning": "#FFB000"
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "IBM Plex Sans",
+    "mono_font": "JetBrains Mono",
+    "scales": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-bold tracking-tight",
+      "h4": "text-lg sm:text-xl font-bold",
+      "body": "text-base font-medium leading-relaxed",
+      "mono_label": "text-xs font-mono uppercase tracking-[0.2em] font-bold"
+    }
+  },
+  "layout": {
+    "spacing_scale": "p-4, p-8, p-12",
+    "grid_system": "Bento Grid (Mode B for Dashboards) - grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "radius": "rounded-none",
+    "alignment": "Left-aligned for dense content; asymmetrical layouts for marketing pages."
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "neo_brutalist": "shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]",
+      "neo_brutalist_hover": "shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] translate-y-[2px] translate-x-[2px]"
+    },
+    "borders": {
+      "thick": "border-2 border-black",
+      "divider": "border-b-2 border-black"
+    },
+    "textures": "Use pure geometric CSS patterns (like abstract hex grids) or high-contrast solid color blocking. Avoid soft gradients."
+  },
+  "components": {
+    "button": "bg-primary text-primary-foreground border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] font-bold uppercase tracking-wider hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] transition-all",
+    "card": "bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] p-6 lg:p-8 rounded-none",
+    "input": "bg-white border-2 border-black p-3 font-mono focus:ring-0 focus:border-secondary focus:shadow-[4px_4px_0px_0px_rgba(0,85,255,1)] transition-all outline-none",
+    "navigation": "bg-white border-b-2 border-black sticky top-0 z-50 px-6 py-4 flex justify-between items-center",
+    "dialog": "bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(10,10,10,1)] p-8 rounded-none"
+  },
+  "image_urls": [
+    {
+      "category": "hero_background",
+      "description": "Abstract honeycomb/hexagonal background for the landing page hero section. Extreme angle, pure white, black, and amber. Use as an underlying visual behind bold text.",
+      "url": "https://static.prod-images.emergentagent.com/jobs/bf6c0876-29fb-483a-9095-61189ab8654c/images/0e7f70392135c7d5e964c790ed6ad02384105344f9d761ca8f79c61f3553ee2e.png"
+    },
+    {
+      "category": "marketing_feature",
+      "description": "Productivity workspace flat lay, useful for 'How it Works' or 'Get Organized' sections on the landing page.",
+      "url": "https://static.prod-images.emergentagent.com/jobs/bf6c0876-29fb-483a-9095-61189ab8654c/images/791dbc4430eef8ebe708022bdc1dd98b63bcbb99a62c3d45bd6e62ef6b23b9bd.png"
+    },
+    {
+      "category": "team_collaboration_1",
+      "description": "Hackathon team working together. Use for About Us or Community sections.",
+      "url": "https://images.unsplash.com/photo-1622258415402-d6f597973b03?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwzfHxoYWNrYXRob24lMjB0ZWFtJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NzgwNjE3MjJ8MA&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "team_collaboration_2",
+      "description": "Group of people around a table with laptops. Use for 'Collaborative Scheduling' feature illustration.",
+      "url": "https://images.unsplash.com/photo-1632835256083-f044d6a859ed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxoYWNrYXRob24lMjB0ZWFtJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NzgwNjE3MjJ8MA&ixlib=rb-4.1.0&q=85"
+    }
+  ],
+  "instructions_to_main_agent": {
+    "component_strategy": "Use pure HTML + Tailwind for marketing pages (to achieve asymmetric, overlapping, neo-brutalist layouts). Use heavily customized Shadcn components for Dashboard, Forms, and complex logic (e.g., Dialogs, Calendars).",
+    "shadcn_customization": "Strip default Vercel-like styling from Shadcn components. Remove soft shadows and rounded corners. Replace with border-2 border-black and hard shadow-[4px_4px_0px_0px_rgba(0,0,0,1)].",
+    "icons": "Use Phosphor Icons (@phosphor-icons/react) with 'bold' or 'duotone' weight to match the thick borders of the neo-brutalist style.",
+    "testing_attributes": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case format (e.g., data-testid='create-meeting-submit-button').",
+    "contrast_rules": "Ensure all text overlaid on the primary yellow or secondary blue has strict black or white contrast to meet WCAG AA.",
+    "file_type_note": "Apply these guidelines to .js/.jsx files as there are no .tsx files.",
+    "animation": "Interactions should feel stark and raw. Use hard state swaps or fast linear transitions instead of slow, easing fades."
+  }
+}
