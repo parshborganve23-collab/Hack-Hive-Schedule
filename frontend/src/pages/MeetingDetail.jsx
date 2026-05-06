@@ -4,7 +4,8 @@ import api, { formatApiErrorDetail } from "@/lib/api";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import PresenceIndicator from "@/components/PresenceIndicator";
-import { Trophy, Video, Download, Share2, CheckCircle2, XCircle, Clock, Lock, Film, BellRing } from "lucide-react";
+import MeetingSummaryModal from "@/components/MeetingSummaryModal";
+import { Trophy, Video, Download, Share2, CheckCircle2, XCircle, Clock, Lock, Film, BellRing, Sparkles, Activity } from "lucide-react";
 
 function fmt(slot) {
   const s = new Date(slot.start);
@@ -19,6 +20,7 @@ export default function MeetingDetail() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [recordingInput, setRecordingInput] = useState("");
+  const [showSummary, setShowSummary] = useState(false);
 
   const load = async () => {
     try {
@@ -192,7 +194,49 @@ export default function MeetingDetail() {
 
           {/* Attendance section (host only, after finalized) */}
           {isHost && (m.status === "finalized" || m.status === "completed") && (
-            <div className="bg-white nb-border nb-shadow p-6" data-testid="attendance-section">
+            <>
+              <div className="bg-white nb-border nb-shadow p-6" data-testid="meeting-analytics-section">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-display text-2xl font-bold">Vote vs Attendance</h2>
+                  <Activity className="w-5 h-5"/>
+                </div>
+                {(() => {
+                  const votes = m.total_votes;
+                  const invited = m.attendees.length;
+                  const attended = m.attendees.filter((a) => a.status === "attended").length;
+                  const missed = m.attendees.filter((a) => a.status === "missed").length;
+                  const rate = invited ? Math.round((attended / invited) * 100) : 0;
+                  const bars = [
+                    { label: "Votes", value: votes, max: Math.max(votes, invited, 1), color: "bg-black" },
+                    { label: "Attended", value: attended, max: Math.max(votes, invited, 1), color: "bg-[var(--hh-success)]" },
+                    { label: "Missed", value: missed, max: Math.max(votes, invited, 1), color: "bg-[var(--hh-error)]" },
+                  ];
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                        <div className="nb-border bg-white p-3"><div className="mono-label">votes</div><div className="font-display text-3xl font-black">{votes}</div></div>
+                        <div className="nb-border bg-[var(--hh-success)] text-white p-3"><div className="mono-label opacity-90">attended</div><div className="font-display text-3xl font-black">{attended}</div></div>
+                        <div className="nb-border bg-[var(--hh-error)] text-white p-3"><div className="mono-label opacity-90">missed</div><div className="font-display text-3xl font-black">{missed}</div></div>
+                        <div className="nb-border bg-[var(--hh-amber)] p-3"><div className="mono-label">rate</div><div className="font-display text-3xl font-black">{rate}%</div></div>
+                      </div>
+                      <div className="space-y-2">
+                        {bars.map((b) => (
+                          <div key={b.label}>
+                            <div className="flex justify-between font-mono text-xs">
+                              <span>{b.label}</span><span>{b.value}</span>
+                            </div>
+                            <div className="h-3 nb-border bg-[var(--hh-surface-alt)] mt-1 overflow-hidden">
+                              <div className={`h-full ${b.color} transition-all duration-700`} style={{ width: `${(b.value / b.max) * 100}%` }}/>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              <div className="bg-white nb-border nb-shadow p-6" data-testid="attendance-section">
               <h2 className="font-display text-2xl font-bold mb-4">Attendance</h2>
               <div className="space-y-2">
                 {m.attendees.length === 0 && <div className="font-mono text-sm">No attendees yet.</div>}
@@ -223,6 +267,7 @@ export default function MeetingDetail() {
                 ))}
               </div>
             </div>
+            </>
           )}
         </div>
 
@@ -249,6 +294,16 @@ export default function MeetingDetail() {
                 className="w-full bg-black text-[var(--hh-amber)] nb-border nb-shadow nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <BellRing className="w-4 h-4" strokeWidth={3}/> Send reminder now
+              </button>
+            )}
+
+            {(m.status === "finalized" || m.status === "completed") && (
+              <button
+                data-testid="open-summary-btn"
+                onClick={() => setShowSummary(true)}
+                className="w-full bg-[var(--hh-blue)] text-white nb-border nb-shadow nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" strokeWidth={3}/> Meeting summary
               </button>
             )}
 
@@ -339,6 +394,7 @@ export default function MeetingDetail() {
           </div>
         </div>
       </div>
+      {showSummary && <MeetingSummaryModal meetingId={id} onClose={() => setShowSummary(false)}/>}
     </Layout>
   );
 }

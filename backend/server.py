@@ -479,6 +479,74 @@ async def presence_check(meeting_id: str, payload: dict, user=Depends(get_curren
         return {"updated": False, "status": "inactive"}
 
 
+@api.get("/meetings/{meeting_id}/summary")
+async def meeting_summary(meeting_id: str, user=Depends(get_current_user)):
+    """Return a rich post-meeting summary: slot, votes, attendance, duration,
+    engagement score, recording link, and a template-generated narrative."""
+    m = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    if not m:
+        raise HTTPException(404, "Meeting not found")
+    total_votes = len(m.get("votes", []))
+    attendees = m.get("attendees", [])
+    attended = sum(1 for a in attendees if a.get("status") == "attended")
+    missed = sum(1 for a in attendees if a.get("status") == "missed")
+    invited = len(attendees)
+    attendance_rate = round((attended / invited) * 100) if invited else 0
+    engagement = min(100, round((attended * 0.6 + total_votes * 0.4) * 2)) if invited else 0
+
+    duration_minutes = 0
+    if m.get("final_slot"):
+        try:
+            s = parse_dt(m["final_slot"]["start"])
+            e = parse_dt(m["final_slot"]["end"])
+            duration_minutes = int((e - s).total_seconds() // 60)
+        except Exception:
+            duration_minutes = 0
+
+    slot_label_str = slot_label(m["final_slot"]) if m.get("final_slot") else "not finalized"
+    missed_users = [a.get("user_name", "") for a in attendees if a.get("status") == "missed"]
+
+    # Template narrative
+    narrative_bits = []
+    if m.get("final_slot"):
+        narrative_bits.append(
+            f"'{m['title']}' was conducted on the majority-selected slot ({slot_label_str})."
+        )
+    else:
+        narrative_bits.append(f"'{m['title']}' has not yet been finalized.")
+    if invited:
+        narrative_bits.append(
+            f"{attended} of {invited} invited participant(s) attended "
+            f"({attendance_rate}% attendance rate)."
+        )
+    if total_votes:
+        narrative_bits.append(f"{total_votes} vote(s) were cast across {len(m.get('slots', []))} proposed slot(s).")
+    if missed:
+        narrative_bits.append(f"{missed} participant(s) missed the session and will receive the replay link.")
+    if m.get("description"):
+        narrative_bits.append(f"Agenda / discussion: {m['description']}")
+    narrative = " ".join(narrative_bits)
+
+    return {
+        "meeting_id": m["id"],
+        "title": m["title"],
+        "status": m.get("status"),
+        "final_slot": m.get("final_slot"),
+        "final_slot_label": slot_label_str,
+        "duration_minutes": duration_minutes,
+        "total_votes": total_votes,
+        "total_invited": invited,
+        "attended": attended,
+        "missed": missed,
+        "attendance_rate": attendance_rate,
+        "engagement_score": engagement,
+        "missed_users": missed_users,
+        "meeting_link": m.get("meeting_link"),
+        "recording_link": m.get("recording_link"),
+        "narrative": narrative,
+    }
+
+
 @api.get("/meetings/{meeting_id}/ics")
 async def export_ics(meeting_id: str, user=Depends(get_current_user)):
     m = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})

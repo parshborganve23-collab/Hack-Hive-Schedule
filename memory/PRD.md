@@ -30,19 +30,23 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 ## What's Implemented (2026-02)
 **Backend** (`/app/backend/server.py`):
 - Auth: register, login, logout, /me (cookie + Bearer)
-- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, CSV export per meeting + analytics CSV
-- **Pre-meeting reminders**: lazy multi-tier triggers (24h, 1h, 15min before) on dashboard load + manual host "Send reminder now" button. Each tier fires once per meeting (tracked via `reminders_sent[]`).
-- **AI-style face verification (demo)**: post-login/register modal uses face-api.js (CDN, TinyFaceDetector ~190KB) via `FaceScanner` component — webcam OR photo upload, animated scanning ring/shimmer/success. Frontend-only, no backend ML.
-- **Live presence detection**: `PresenceIndicator` widget on Dashboard (compact pill) + MeetingDetail (full card) — periodic webcam face-detect every 3.5s; POSTs to `/api/meetings/{id}/presence` which auto-marks the user as "attended" when face detected during a finalized meeting.
+- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, CSV export per meeting + analytics CSV, **meeting summary endpoint** (`/api/meetings/{id}/summary` returning slot/votes/attendance/engagement/narrative)
+- Presence tracking endpoint (face-detection driven auto-attendance)
+- Pre-meeting reminders: lazy multi-tier triggers (24h, 1h, 15min before) on dashboard load + manual host "Send reminder now" button. Each tier fires once per meeting (tracked via `reminders_sent[]`).
+- Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording/reminder
+- Dashboard stats; auto-finalize by deadline endpoint
+- Admin seed on startup
 - Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording/reminder
 - Dashboard stats; auto-finalize by deadline endpoint
 - Admin seed on startup
 
 **Frontend**:
-- Landing, Login, Register, Dashboard, CreateMeeting, MeetingDetail (vote+results+attendance+recording), CalendarPage (custom monthly grid), Notifications, Analytics, PublicPoll
+- Landing, Login, Register (with face-scan gate), Dashboard (with compact presence pill + stat tiles), CreateMeeting, MeetingDetail (vote/results + vote-vs-attendance analytics card + presence webcam + meeting-summary modal + attendance + recording), CalendarPage (custom monthly grid), Notifications, Analytics (recharts donut + votes-vs-attendance bar chart), PublicPoll
+- `FaceScanner` + `PresenceIndicator` components (face-api.js CDN, TinyFaceDetector ~190KB, frontend-only)
+- `MeetingSummaryModal` — donut + engagement score + template narrative + download .txt
 - Auth context (cookie + localStorage Bearer fallback)
 - Layout with topbar + mobile-tabs + brand
-- Neo-brutalist component primitives (`nb-border`, `nb-shadow`, `nb-press`)
+- Neo-brutalist primitives (`nb-border`, `nb-shadow`, `nb-press`, scan-line animations)
 
 ## Verified (testing agent iteration_1)
 - Backend: 18/18 pytest passing

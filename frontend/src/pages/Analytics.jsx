@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import Layout from "@/components/Layout";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function Analytics() {
   const [stats, setStats] = useState(null);
@@ -57,6 +58,56 @@ export default function Analytics() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
+        <div className="bg-white nb-border nb-shadow p-6">
+          <div className="mono-label mb-3">[ attendance mix ]</div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Attended", value: stats.attendance.attended },
+                    { name: "Missed", value: stats.attendance.missed },
+                  ]}
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={2}
+                  stroke="#0A0A0A"
+                  strokeWidth={2}
+                  dataKey="value"
+                >
+                  <Cell fill="#00C853"/>
+                  <Cell fill="#FF3333"/>
+                </Pie>
+                <Tooltip contentStyle={{ border: "2px solid #0A0A0A", borderRadius: 0, fontFamily: "IBM Plex Mono" }}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex gap-4 justify-center mt-2 text-xs font-mono">
+            <span className="flex items-center gap-1"><span className="w-3 h-3 nb-border bg-[var(--hh-success)]"/>attended · {stats.attendance.attended}</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 nb-border bg-[var(--hh-error)]"/>missed · {stats.attendance.missed}</span>
+          </div>
+        </div>
+
+        <div className="bg-white nb-border nb-shadow p-6">
+          <div className="mono-label mb-3">[ votes vs attendance · per meeting ]</div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topByVotes.map((m) => ({
+                name: m.title.length > 12 ? m.title.slice(0, 12) + "…" : m.title,
+                votes: m.total_votes,
+                attended: (m.attendees || []).filter((a) => a.status === "attended").length,
+              }))}>
+                <CartesianGrid strokeDasharray="2 2" stroke="#0A0A0A" opacity={0.2}/>
+                <XAxis dataKey="name" stroke="#0A0A0A" style={{ fontFamily: "IBM Plex Mono", fontSize: 10 }}/>
+                <YAxis stroke="#0A0A0A" style={{ fontFamily: "IBM Plex Mono", fontSize: 10 }}/>
+                <Tooltip contentStyle={{ border: "2px solid #0A0A0A", borderRadius: 0, fontFamily: "IBM Plex Mono" }}/>
+                <Bar dataKey="votes" fill="#0A0A0A" stroke="#0A0A0A" strokeWidth={2}/>
+                <Bar dataKey="attended" fill="#00C853" stroke="#0A0A0A" strokeWidth={2}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         <div className="bg-white nb-border nb-shadow p-6">
           <div className="mono-label mb-3">[ top meetings · by votes ]</div>
           <div className="space-y-3" data-testid="top-meetings-chart">
