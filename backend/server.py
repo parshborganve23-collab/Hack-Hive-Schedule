@@ -421,6 +421,40 @@ async def add_recording(meeting_id: str, payload: RecordingIn, user=Depends(get_
     return serialize_meeting(m, user["id"])
 
 
+@api.get("/meetings/{meeting_id}/export.csv")
+async def export_meeting_csv(meeting_id: str, user=Depends(get_current_user)):
+    m = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    if not m:
+        raise HTTPException(404, "Meeting not found")
+    slot_label_by_id = {s["id"]: slot_label(s) for s in m.get("slots", [])}
+    lines = ["section,name,email,slot,voted_at,attendance_status"]
+    for v in m.get("votes", []):
+        lines.append(f'votes,"{v.get("user_name","")}","{v.get("user_email","")}","{slot_label_by_id.get(v.get("slot_id"),"")}",{v.get("voted_at","")},')
+    for a in m.get("attendees", []):
+        lines.append(f'attendance,"{a.get("user_name","")}","{a.get("user_email","")}",,,{a.get("status","")}')
+    csv_body = "\r\n".join(lines) + "\r\n"
+    return Response(content=csv_body, media_type="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="{m["title"]}-export.csv"'})
+
+
+@api.get("/analytics/export.csv")
+async def export_analytics_csv(user=Depends(get_current_user)):
+    q = {"$or": [{"created_by": user["id"]},
+                 {"invitees": user["email"]},
+                 {"meeting_type": "group"}]}
+    cur = db.meetings.find(q, {"_id": 0})
+    lines = ["meeting,status,total_votes,attended,missed,final_slot,created_at"]
+    async for m in cur:
+        attended = sum(1 for a in m.get("attendees", []) if a.get("status") == "attended")
+        missed = sum(1 for a in m.get("attendees", []) if a.get("status") == "missed")
+        final = slot_label(m["final_slot"]) if m.get("final_slot") else ""
+        title = (m.get("title", "") or "").replace('"', "'")
+        lines.append(f'"{title}",{m.get("status","")},{len(m.get("votes", []))},{attended},{missed},"{final}",{m.get("created_at","")}')
+    csv_body = "\r\n".join(lines) + "\r\n"
+    return Response(content=csv_body, media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="hackhive-analytics.csv"'})
+
+
 @api.get("/meetings/{meeting_id}/ics")
 async def export_ics(meeting_id: str, user=Depends(get_current_user)):
     m = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})

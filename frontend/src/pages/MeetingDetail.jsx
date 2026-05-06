@@ -85,6 +85,14 @@ export default function MeetingDetail() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadCsv = async () => {
+    const res = await api.get(`/meetings/${id}/export.csv`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${m.title}-export.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const shareLink = `${window.location.origin}/poll/${m.poll_token}`;
   const copyShare = async () => {
     await navigator.clipboard.writeText(shareLink);
@@ -240,6 +248,14 @@ export default function MeetingDetail() {
               className="w-full bg-white nb-border nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" strokeWidth={2.5}/> Download .ics
+            </button>
+
+            <button
+              data-testid="download-csv"
+              onClick={downloadCsv}
+              className="w-full bg-white nb-border nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" strokeWidth={2.5}/> Export votes/attendance CSV
             </button>
           </div>
 

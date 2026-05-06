@@ -12,6 +12,14 @@ export default function Analytics() {
     });
   }, []);
 
+  const downloadCsv = async () => {
+    const res = await api.get(`/analytics/export.csv`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a");
+    a.href = url; a.download = `hackhive-analytics.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (!stats) return <Layout><div className="font-mono text-sm">Loading...</div></Layout>;
 
   const totalAtt = stats.attendance.attended + stats.attendance.missed;
@@ -24,9 +32,12 @@ export default function Analytics() {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <div className="mono-label">[ analytics ]</div>
-        <h1 className="font-display text-4xl font-black mt-1">Hive Telemetry</h1>
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <div className="mono-label">[ analytics ]</div>
+          <h1 className="font-display text-4xl font-black mt-1">Hive Telemetry</h1>
+        </div>
+        <button data-testid="analytics-export-csv" onClick={downloadCsv} className="nb-border bg-[var(--hh-amber)] nb-shadow nb-press px-4 py-2 font-display font-bold uppercase text-sm">⬇ Export CSV</button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5 mb-8">

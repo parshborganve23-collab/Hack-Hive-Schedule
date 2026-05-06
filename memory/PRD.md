@@ -30,7 +30,7 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 ## What's Implemented (2026-02)
 **Backend** (`/app/backend/server.py`):
 - Auth: register, login, logout, /me (cookie + Bearer)
-- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export
+- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, **CSV export per meeting + analytics CSV**
 - Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording
 - Dashboard stats; auto-finalize by deadline endpoint
 - Admin seed on startup
@@ -53,7 +53,7 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 - **P2** Background scheduler (cron) for auto-finalize at deadline
 - **P2** Reminder notifications N hours before final slot
 - **P2** Meeting templates / recurring meetings
-- **P2** CSV export of attendance & vote analytics
+- **P2** Smart Suggest Slots — propose 3 high-availability blocks based on existing votes
 
 ## Test Credentials
 - Admin: `admin@hackhive.dev` / `admin123`
