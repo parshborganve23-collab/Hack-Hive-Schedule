@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api, { formatApiErrorDetail } from "@/lib/api";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, Video, Download, Share2, CheckCircle2, XCircle, Clock, Lock, Film } from "lucide-react";
+import { Trophy, Video, Download, Share2, CheckCircle2, XCircle, Clock, Lock, Film, BellRing } from "lucide-react";
 
 function fmt(slot) {
   const s = new Date(slot.start);
@@ -91,6 +91,17 @@ export default function MeetingDetail() {
     const a = document.createElement("a");
     a.href = url; a.download = `${m.title}-export.csv`; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const sendReminder = async () => {
+    setBusy(true); setError("");
+    try {
+      const { data } = await api.post(`/meetings/${id}/send-reminder`);
+      setError(""); // clear
+      alert(`Reminder sent to ${data.sent} attendee(s).`);
+    } catch (e) {
+      setError(formatApiErrorDetail(e.response?.data?.detail) || e.message);
+    } finally { setBusy(false); }
   };
 
   const shareLink = `${window.location.origin}/poll/${m.poll_token}`;
@@ -221,6 +232,17 @@ export default function MeetingDetail() {
                 className="w-full bg-[var(--hh-blue)] text-white nb-border nb-shadow nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Lock className="w-4 h-4" strokeWidth={3}/> Finalize now
+              </button>
+            )}
+
+            {isHost && (m.status === "finalized" || m.status === "completed") && m.attendees?.length > 0 && (
+              <button
+                data-testid="send-reminder-btn"
+                onClick={sendReminder}
+                disabled={busy}
+                className="w-full bg-black text-[var(--hh-amber)] nb-border nb-shadow nb-press p-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <BellRing className="w-4 h-4" strokeWidth={3}/> Send reminder now
               </button>
             )}
 

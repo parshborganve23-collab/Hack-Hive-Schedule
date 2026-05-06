@@ -25,8 +25,11 @@ export default function Dashboard() {
   const load = async () => {
     setLoading(true);
     try {
-      // Auto-finalize first
-      await api.post("/meetings/auto-finalize").catch(() => {});
+      // Lazy triggers: auto-finalize past-deadline polls + send 1h reminders
+      await Promise.all([
+        api.post("/meetings/auto-finalize").catch(() => {}),
+        api.post("/meetings/process-reminders").catch(() => {}),
+      ]);
       const [m, s] = await Promise.all([api.get("/meetings"), api.get("/dashboard/stats")]);
       setMeetings(m.data);
       setStats(s.data);

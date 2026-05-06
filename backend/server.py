@@ -533,6 +533,57 @@ async def mark_all_read(user=Depends(get_current_user)):
 
 
 # ---------- Auto-finalize cron-like check (run lazily at any list call) ----------
+async def _send_reminder(m: dict, kind: str = "1h"):
+    """Send pre-meeting reminder to all attendees of a finalized meeting."""
+    if not m.get("final_slot"):
+        return 0
+    sent = 0
+    final = m["final_slot"]
+    when = parse_dt(final["start"])
+    label = slot_label(final)
+    msg = f"Reminder: '{m['title']}' starts at {label} · join {m.get('meeting_link','')}"
+    for a in m.get("attendees", []):
+        await notify(a["user_id"], "meeting_reminder", msg, m["id"])
+        sent += 1
+    await db.meetings.update_one(
+        {"id": m["id"]},
+        {"$addToSet": {"reminders_sent": kind}},
+    )
+    return sent
+
+
+@api.post("/meetings/process-reminders")
+async def process_reminders(user=Depends(get_current_user)):
+    """Lazy trigger: find finalized meetings whose final slot starts within 60 min
+    and haven't had the 1h reminder sent yet."""
+    horizon = now_utc() + timedelta(hours=1)
+    cur = db.meetings.find({"status": {"$in": ["finalized", "completed"]}, "final_slot": {"$ne": None}})
+    triggered = 0
+    async for m in cur:
+        start = parse_dt(m["final_slot"]["start"])
+        already = "1h" in (m.get("reminders_sent") or [])
+        if not already and now_utc() <= start <= horizon:
+            await _send_reminder(m, "1h")
+            triggered += 1
+    return {"reminded": triggered}
+
+
+@api.post("/meetings/{meeting_id}/send-reminder")
+async def send_reminder_manual(meeting_id: str, user=Depends(get_current_user)):
+    """Host-triggered manual reminder."""
+    m = await db.meetings.find_one({"id": meeting_id})
+    if not m:
+        raise HTTPException(404, "Meeting not found")
+    if m["created_by"] != user["id"]:
+        raise HTTPException(403, "Only the host can send reminders")
+    if not m.get("final_slot"):
+        raise HTTPException(400, "Meeting has no finalized slot")
+    if not m.get("attendees"):
+        raise HTTPException(400, "No attendees to notify")
+    sent = await _send_reminder(m, "manual")
+    return {"sent": sent}
+
+
 @api.post("/meetings/auto-finalize")
 async def auto_finalize(user=Depends(get_current_user)):
     cur = db.meetings.find({"status": "voting"})

@@ -30,8 +30,9 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 ## What's Implemented (2026-02)
 **Backend** (`/app/backend/server.py`):
 - Auth: register, login, logout, /me (cookie + Bearer)
-- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, **CSV export per meeting + analytics CSV**
-- Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording
+- Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, CSV export per meeting + analytics CSV
+- **Pre-meeting reminders**: lazy 1h-before trigger (fired on dashboard load) + manual host "Send reminder now" button
+- Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording/reminder
 - Dashboard stats; auto-finalize by deadline endpoint
 - Admin seed on startup
 
@@ -51,7 +52,7 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 - **P1** Live vote sync via WebSocket (currently requires page reload)
 - **P2** Google Calendar OAuth push (currently .ics only)
 - **P2** Background scheduler (cron) for auto-finalize at deadline
-- **P2** Reminder notifications N hours before final slot
+- **P2** Additional reminder lead times (24h, 15min) — currently 1h-only
 - **P2** Meeting templates / recurring meetings
 - **P2** Smart Suggest Slots — propose 3 high-availability blocks based on existing votes
 
