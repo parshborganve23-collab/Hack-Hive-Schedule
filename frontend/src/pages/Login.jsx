@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatApiErrorDetail } from "@/lib/api";
-import { Hexagon, ArrowRight } from "lucide-react";
+import { Hexagon, ArrowRight, ScanFace } from "lucide-react";
+import FaceScanner from "@/components/FaceScanner";
 
 export default function Login() {
   const { login } = useAuth();
@@ -11,13 +12,14 @@ export default function Login() {
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
       await login(email, password);
-      nav("/dashboard");
+      setShowScanner(true); // gate navigation behind face verify
     } catch (e) {
       setError(formatApiErrorDetail(e.response?.data?.detail) || e.message);
     } finally {
@@ -90,8 +92,22 @@ export default function Login() {
             New here?{" "}
             <Link to="/register" data-testid="login-go-register" className="font-bold underline">Create an account</Link>
           </div>
+
+          <div className="mt-4 nb-border bg-[var(--hh-surface-alt)] p-3 flex items-center gap-2 text-xs font-mono">
+            <ScanFace className="w-4 h-4"/>
+            <span>After password, you'll do a quick AI face scan (demo).</span>
+          </div>
         </form>
       </div>
+
+      {showScanner && (
+        <FaceScanner
+          title="Identity Check"
+          subtitle="Scan your face to finish signing in. Demo only — no data stored."
+          onVerified={() => { setShowScanner(false); nav("/dashboard"); }}
+          onClose={() => { setShowScanner(false); nav("/dashboard"); }}
+        />
+      )}
     </div>
   );
 }

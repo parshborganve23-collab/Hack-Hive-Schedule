@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatApiErrorDetail } from "@/lib/api";
-import { Hexagon, ArrowRight } from "lucide-react";
+import { Hexagon, ArrowRight, ScanFace } from "lucide-react";
+import FaceScanner from "@/components/FaceScanner";
 
 export default function Register() {
   const { register } = useAuth();
@@ -10,6 +11,7 @@ export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "admin" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -18,7 +20,7 @@ export default function Register() {
     setError(""); setLoading(true);
     try {
       await register(form);
-      nav("/dashboard");
+      setShowScanner(true);
     } catch (e) {
       setError(formatApiErrorDetail(e.response?.data?.detail) || e.message);
     } finally {
@@ -91,8 +93,22 @@ export default function Register() {
             Already in?{" "}
             <Link to="/login" data-testid="register-go-login" className="font-bold underline">Sign in</Link>
           </div>
+
+          <div className="mt-4 nb-border bg-[var(--hh-surface-alt)] p-3 flex items-center gap-2 text-xs font-mono">
+            <ScanFace className="w-4 h-4"/>
+            <span>Next: a 3-sec AI face scan (demo, no data stored).</span>
+          </div>
         </form>
       </div>
+
+      {showScanner && (
+        <FaceScanner
+          title="Enroll Your Face"
+          subtitle="One quick scan so the hive can welcome you on return visits. Demo only."
+          onVerified={() => { setShowScanner(false); nav("/dashboard"); }}
+          onClose={() => { setShowScanner(false); nav("/dashboard"); }}
+        />
+      )}
 
       <div className="hidden lg:flex bg-[var(--hh-blue)] text-white p-12 flex-col justify-between order-1 lg:order-2 border-l-2 border-black">
         <Link to="/" className="flex items-center gap-2" data-testid="register-brand">

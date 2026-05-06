@@ -455,6 +455,30 @@ async def export_analytics_csv(user=Depends(get_current_user)):
                     headers={"Content-Disposition": 'attachment; filename="hackhive-analytics.csv"'})
 
 
+@api.post("/meetings/{meeting_id}/presence")
+async def presence_check(meeting_id: str, payload: dict, user=Depends(get_current_user)):
+    """Called by PresenceIndicator — if face detected and user is an attendee of a finalized meeting, auto-mark them attended."""
+    detected = bool(payload.get("detected", False))
+    m = await db.meetings.find_one({"id": meeting_id})
+    if not m:
+        raise HTTPException(404, "Meeting not found")
+    if m.get("status") not in ("finalized", "completed"):
+        return {"updated": False, "reason": "not finalized"}
+    if detected:
+        res = await db.meetings.update_one(
+            {"id": meeting_id, "attendees.user_id": user["id"]},
+            {"$set": {"attendees.$.status": "attended", "attendees.$.last_seen": iso(now_utc())}},
+        )
+        return {"updated": res.modified_count > 0, "status": "attended"}
+    else:
+        # only update last_seen so host can see drop-off
+        await db.meetings.update_one(
+            {"id": meeting_id, "attendees.user_id": user["id"]},
+            {"$set": {"attendees.$.last_seen": iso(now_utc())}},
+        )
+        return {"updated": False, "status": "inactive"}
+
+
 @api.get("/meetings/{meeting_id}/ics")
 async def export_ics(meeting_id: str, user=Depends(get_current_user)):
     m = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})

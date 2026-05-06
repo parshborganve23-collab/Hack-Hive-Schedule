@@ -32,6 +32,8 @@ Build a full-stack hackathon-ready web app, "HackHive Schedule", a smart collabo
 - Auth: register, login, logout, /me (cookie + Bearer)
 - Meetings: create (with overlap detection), list, get, public-poll-by-token, vote, finalize, attendance, recording, .ics export, CSV export per meeting + analytics CSV
 - **Pre-meeting reminders**: lazy multi-tier triggers (24h, 1h, 15min before) on dashboard load + manual host "Send reminder now" button. Each tier fires once per meeting (tracked via `reminders_sent[]`).
+- **AI-style face verification (demo)**: post-login/register modal uses face-api.js (CDN, TinyFaceDetector ~190KB) via `FaceScanner` component — webcam OR photo upload, animated scanning ring/shimmer/success. Frontend-only, no backend ML.
+- **Live presence detection**: `PresenceIndicator` widget on Dashboard (compact pill) + MeetingDetail (full card) — periodic webcam face-detect every 3.5s; POSTs to `/api/meetings/{id}/presence` which auto-marks the user as "attended" when face detected during a finalized meeting.
 - Notifications: list, mark read, mark all read; auto-emit on create/finalize/recording/reminder
 - Dashboard stats; auto-finalize by deadline endpoint
 - Admin seed on startup

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/lib/api";
 import Layout from "@/components/Layout";
+import PresenceIndicator from "@/components/PresenceIndicator";
 import { CalendarClock, Vote, Trophy, CheckCircle2, ArrowUpRight, Users } from "lucide-react";
 
 const STATUS_STYLES = {

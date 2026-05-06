@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api, { formatApiErrorDetail } from "@/lib/api";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
+import PresenceIndicator from "@/components/PresenceIndicator";
 import { Trophy, Video, Download, Share2, CheckCircle2, XCircle, Clock, Lock, Film, BellRing } from "lucide-react";
 
 function fmt(slot) {
@@ -102,6 +103,11 @@ export default function MeetingDetail() {
     } catch (e) {
       setError(formatApiErrorDetail(e.response?.data?.detail) || e.message);
     } finally { setBusy(false); }
+  };
+
+  // Auto-mark attendance when face detected for finalized meetings user attends
+  const presenceReport = async (detected) => {
+    try { await api.post(`/meetings/${id}/presence`, { detected }); load(); } catch {}
   };
 
   const shareLink = `${window.location.origin}/poll/${m.poll_token}`;
@@ -285,6 +291,13 @@ export default function MeetingDetail() {
             <div className="mono-label">[ share ]</div>
             <div className="font-mono text-xs break-all mt-2 nb-border bg-[var(--hh-surface-alt)] p-2" data-testid="share-link-display">{shareLink}</div>
           </div>
+
+          {(m.status === "finalized" || m.status === "completed") && (
+            <PresenceIndicator
+              label="Meeting Presence"
+              onStatusChange={presenceReport}
+            />
+          )}
 
           {isHost && (m.status === "finalized" || m.status === "completed") && (
             <div className="bg-white nb-border nb-shadow p-5">
